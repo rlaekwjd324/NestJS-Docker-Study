@@ -1,41 +1,46 @@
 import { Injectable, NotFoundException, Param } from '@nestjs/common';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
-import { Board } from './entities/board.entity';
+import { Board } from './entity/board.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { BoardRepository } from './boards.repository';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BoardsService {
+    constructor(
+        @InjectRepository(BoardRepository)
+        private boardRepository: Repository<Board>
+    ) { this.boardRepository = boardRepository }
+
     private boards: Board[] = [];
 
-    getAll(): Board[] {
-        return this.boards.sort((a, b) => {
-            return a.id - b.id;
-        });
+    getBoards(): Promise<Board[]> {
+        return this.boardRepository.find();
     }
 
-    getOne(id: number): Board {
-        const board = this.boards.find(board => board.id === +id);
+    getBoard(id: number): Promise<Board> {
+        const board = this.boardRepository.findOneBy({ id: id });
         if (!board) {
             throw new NotFoundException(`${id} 게시글은 없어`);
         }
         return board;
     }
 
-    deleteOne(id: number) {
-        this.getOne(id);
-        this.boards = this.boards.filter(board => board.id !== id);
+    async deleteBoard(id: number) {
+        this.getBoard(id);
+        await this.boardRepository.delete({ id: id });
     }
 
-    create(boardData: CreateBoardDto) {
-        this.boards.push({
-            id: this.boards.length + 1,
-            ...boardData
-        });
+    async createBoard(boardData: CreateBoardDto): Promise<void> {
+        await this.boardRepository.save(boardData);
     }
 
-    update(id: number, updateData: UpdateBoardDto) {
-        const board = this.getOne(id);
-        this.deleteOne(id);
-        this.boards.push({ ...board, ...updateData });
+    async updateBoard(id: number, updateData: UpdateBoardDto): Promise<void> {
+        this.getBoard(id);
+        await this.boardRepository.update(
+            id,
+            updateData
+        );
     }
 }

@@ -9,26 +9,26 @@ export class BoardsController {
 
     @Get()
     getAll() {
-        return this.boardsService.getAll();
+        return this.boardsService.getBoards();
     }
 
     @Get(":id")
     getOne(@Param('id') boardId: number) {
-        return this.boardsService.getOne(boardId);
+        return this.boardsService.getBoard(boardId);
     }
 
     @Post()
     create(@Body() boardData: CreateBoardDto) {
-        return this.boardsService.create(boardData);
+        return this.boardsService.createBoard(boardData);
     }
 
     @Delete(":id")
     remove(@Param('id') boardId: number) {
-        return this.boardsService.deleteOne(boardId);
+        return this.boardsService.deleteBoard(boardId);
     }
 
     @Patch(':id')
     patch(@Param('id') boardId: number, @Body() updateData: UpdateBoardDto) {
-        return this.boardsService.update(boardId, updateData);
+        return this.boardsService.updateBoard(boardId, updateData);
     }
 }
